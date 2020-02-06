@@ -8,6 +8,8 @@
 import sys
 import os
 import pprint
+import re
+
 pp = pprint.PrettyPrinter(indent=4)
 import argparse
 
@@ -119,13 +121,13 @@ def stats_users(args):
 
 
 def get_queue_stats():
-    q =  "SELECT tool_id, state, count(*) as count FROM job"
+    q =  "SELECT tool_id, state, count(*) as count FROM job "
     q += "WHERE state in ('queued', 'running') "
     q += "GROUP BY tool_id, state ORDER BY count desc"
 
     for entry in db.get_as_dict( q ):
         entry['tool_id'] = re.sub(r'^.*repos/', '', entry['tool_id'])
-        print("queue,tool_id={},state={} count={}".format(entry['tool_id'], entry['state'], entry['count'])
+        print("queue,tool_id={},state={} count={}".format(entry['tool_id'], entry['state'], entry['count']))
 
 
 def stats_queue(args):
@@ -207,7 +209,7 @@ def stats_command(args) -> None:
     elif command == 'data':
         stats_data(args)
     elif command == 'queue':
-        stats_queue()
+        stats_queue(args)
     else:
         print("stat sub-commands: {}".format(", ".join(commands)))
         sys.exit()
