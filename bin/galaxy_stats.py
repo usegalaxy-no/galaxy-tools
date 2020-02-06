@@ -118,6 +118,20 @@ def stats_users(args):
 
 
 
+def get_queue_stats():
+    q =  "SELECT tool_id, state, count(*) as count FROM job"
+    q += "WHERE state in ('queued', 'running') "
+    q += "GROUP BY tool_id, state ORDER BY count desc"
+
+    for entry in db.get_as_dict( q ):
+        entry['tool_id'] = re.sub(r'^.*repos/', '', entry['tool_id'])
+        print("queue,tool_id={},state={} count={}".format(entry['tool_id'], entry['state'], entry['count'])
+
+
+def stats_queue(args):
+    get_queue_stats()
+
+
 def get_upload_stats(month:int=None,day:int=None,hour:int=None):
 
     q  = "SELECT coalesce(sum(dataset.total_size), 0) as size FROM job "
@@ -181,7 +195,7 @@ def stats_command(args) -> None:
         stats_jobs(args)
         return
 
-    commands = ['users', 'jobs', 'data', 'help']
+    commands = ['users', 'jobs', 'queue', 'data', 'help']
 
     command = args.command.pop( 0 )
     args_utils.valid_command(command, commands)
@@ -192,6 +206,8 @@ def stats_command(args) -> None:
         stats_jobs(args)
     elif command == 'data':
         stats_data(args)
+    elif command == 'queue':
+        stats_queue()
     else:
         print("stat sub-commands: {}".format(", ".join(commands)))
         sys.exit()
