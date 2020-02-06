@@ -146,8 +146,8 @@ def get_upload_stats(month:int=None,day:int=None,hour:int=None):
     entry = db.get_as_dict( q )
     count = 0
     if entry is not None:
-        count = entry[0]['size']
-        count /= float(1e9)
+        count = float(entry[0]['size'])
+        count /= 1e9
 
     print("data-upload,timeframe={},size=1,format=GB count={}".format( timeframe, count))
 
@@ -176,7 +176,9 @@ def stats_data(args):
 def stats_command(args) -> None:
 
     if len( args.command) == 0:
-        default_stats(args)
+        stats_users(args)
+        stats_data(args)
+        stats_jobs(args)
         return
 
     commands = ['users', 'jobs', 'data', 'help']
