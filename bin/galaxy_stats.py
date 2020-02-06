@@ -128,6 +128,11 @@ def main():
 
     args = parser.parse_args()
 
+
+    command = args.command.pop(0)
+    if command not in commands:
+        parser.print_help()
+
     if command == 'bootstrap':
         write_config_file()
         sys.exit()
@@ -137,11 +142,6 @@ def main():
     global db
     db = db_utils.DB()
     db.connect( config.database )
-
-
-    command = args.command.pop(0)
-    if command not in commands:
-        parser.print_help()
 
     if command == 'stats':
         stats_command(args)
