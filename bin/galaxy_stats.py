@@ -195,6 +195,7 @@ def stats_command(args) -> None:
         stats_users(args)
         stats_data(args)
         stats_jobs(args)
+        stats_queue( args )
         return
 
     commands = ['users', 'jobs', 'queue', 'data', 'help']
