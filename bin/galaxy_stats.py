@@ -14,7 +14,11 @@ import argparse
 
 import kbr.db_utils as db_utils
 import kbr.args_utils as args_utils
+import kbr.config_utils as config_utils
+import kbr.string_utils as string_utils
+import kbr.file_utils as file_utils
 
+db = None
 
 def disk_usage():
     pass
@@ -44,13 +48,13 @@ def get_job_stats(day:int=None, hour:int=None):
         total += count
 
 
-    print("total\tcount={}".format(total))
+    print("jobs,{},state={}\tcount={}".format(timeframe,"total", count))
 
 
 
 
 def queue_overview(last_hours:int=None, last_days:int=None):
-    q = "SELECT  tool_id, tool_version, state, destination_id AS destination, job_runner_name, create_time, update_time FROM job;"
+    q =  "SELECT  tool_id, tool_version, state, destination_id AS destination, job_runner_name, create_time, update_time FROM job "
     q += " WHERE state = 'running' OR state = 'queued' OR state = 'new' "
 
     if last_hours is not None:
@@ -108,15 +112,26 @@ def stats_command(args) -> None:
         sys.exit()
 
 
+def write_config_file():
+    conf = '{"db_url": "postgresql://<USERNAME>:<PASSWORD>@<HOSTNAME>:<PORT>/<DATABASE>"}'
+
+    file_utils.write("galaxy.json", conf)
 
 
 def main():
 
     parser = argparse.ArgumentParser(description='cbu galaxy admin tool')
-    commands = ["stats"]
+    parser.add_argument('-c', '--config', default="galaxy.json", help="config file")
+
+    commands = ["stats", "bootstrap"]
     parser.add_argument('command', nargs='+', help="{}".format(",".join(commands)))
 
     args = parser.parse_args()
+    config = config_utils.readin_config_file( args.config )
+    global db
+    db = db_utils.DB()
+    db.connect( config.database )
+
 
     command = args.command.pop(0)
     if command not in commands:
@@ -124,6 +139,8 @@ def main():
 
     if command == 'stats':
         stats_command(args)
+    elif command == 'bootstrap':
+        write_config_file()
     else:
         print("Unknown command: {} are allowed.".format(string_utils.comma_sep( commands )))
         sys.exit( 1 )
