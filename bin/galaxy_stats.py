@@ -37,17 +37,14 @@ def get_job_stats(day:int=None, hour:int=None):
 
     q += "GROUP BY state"
 
-    print( q )
-
     total = 0
 
-
     for entry in db.get_as_dict( q ):
-        print("jobs,{},state={}\tcount={}".format(timeframe,entry['state'], entry['count']))
+        print("jobs,{}state={}\tcount={}".format(timeframe,entry['state'], entry['count']))
         total += int(entry['count'])
 
-
-    print("jobs,{},state={}\tcount={}".format(timeframe,"total", count))
+    if total > 0:
+        print("jobs,{}state={}\tcount={}".format(timeframe,"total", total))
 
 
 
