@@ -127,6 +127,12 @@ def main():
     parser.add_argument('command', nargs='+', help="{}".format(",".join(commands)))
 
     args = parser.parse_args()
+
+    if command == 'bootstrap':
+        write_config_file()
+        sys.exit()
+
+
     config = config_utils.readin_config_file( args.config )
     global db
     db = db_utils.DB()
