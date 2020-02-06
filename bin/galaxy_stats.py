@@ -42,10 +42,9 @@ def get_job_stats(day:int=None, hour:int=None):
     total = 0
 
 
-    for entry in db_utils.get_as_dict( q ):
-        state, count = list(entry)
-        print("jobs,{},state={}\tcount={}".format(timeframe,state, count))
-        total += count
+    for entry in db.get_as_dict( q ):
+        print("jobs,{},state={}\tcount={}".format(timeframe,entry['state'], entry['count']))
+        total += int(entry['count'])
 
 
     print("jobs,{},state={}\tcount={}".format(timeframe,"total", count))
@@ -67,7 +66,7 @@ def queue_overview(last_hours:int=None, last_days:int=None):
 
 def stats_jobs(args):
     if len( args.command) == 0:
-        get_job_stats(args)
+        get_job_stats()
         get_job_stats(day=1)
         get_job_stats(hour=1)
         return
@@ -77,7 +76,7 @@ def stats_jobs(args):
     args_utils.valid_command(command, commands)
 
     if command == 'total':
-        get_job_stats(args)
+        get_job_stats()
     elif command == 'day':
         offset = args_utils.get_or_default(args.command, 1)
         get_job_stats(day=offset)
@@ -140,7 +139,7 @@ def main():
 
     config = config_utils.readin_config_file( args.config )
     global db
-    db = db_utils.DB( config.database )
+    db = db_utils.DB( config.db_url )
 
     if command == 'stats':
         stats_command(args)
