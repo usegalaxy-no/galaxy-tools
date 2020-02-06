@@ -140,8 +140,7 @@ def main():
 
     config = config_utils.readin_config_file( args.config )
     global db
-    db = db_utils.DB()
-    db.connect( config.database )
+    db = db_utils.DB( config.database )
 
     if command == 'stats':
         stats_command(args)
