@@ -87,17 +87,14 @@ def get_user_stats(year:int=None,month:str=None):
         where="WHERE date_trunc('month', job.create_time AT TIME ZONE 'UTC') = '{}-01'::date ".format( month )
 
     q  = "SELECT date_trunc('month', job.create_time AT TIME ZONE 'UTC')::date as month, "
-    q += "count(distinct user_id) as active_users FROM job {}".format( where )
+    q += "count(distinct user_id) AS count FROM job {}".format( where )
     q += "GROUP BY month ORDER BY month DESC"
 
-    print( q )
+#    print( q )
 
     for entry in db.get_as_dict( q ):
-        print("active-users,timeframe=month,date={}\tcount={}".format(timeframe,entry['state'], entry['count']))
-        total += int(entry['count'])
+        print("active-users,timeframe=month,size=1,date={}\tcount={}".format(entry['month'], entry['count']))
 
-    if total > 0:
-        print("jobs,{}state={}\tcount={}".format(timeframe,"total", total))
 
 
 def stats_users(args):
@@ -134,23 +131,25 @@ def get_upload_stats(month:int=None,day:int=None,hour:int=None):
     size      = 1
     if month is not None:
         timeframe = "month"
-        size = offset = args_utils.get_or_default(args.command, 1)
+        size = month
     elif day is not None:
         timeframe = "day"
-        size = offset = args_utils.get_or_default(args.command, 1)
+        size = day
     elif hour is not None:
         timeframe = "hour"
-        size = offset = args_utils.get_or_default(args.command, 1)
+        size = hour
 
     q += "AND job.create_time AT TIME ZONE 'UTC' > (now() - '{} {}s'::INTERVAL)".format(size, timeframe)
 
-    entry = db.get_single( q )
+#    print( q )
+
+    entry = db.get_as_dict( q )
     count = 0
     if entry is not None:
-        count = entry['size']
-        count /= 1e9
+        count = entry[0]['size']
+        count /= float(1e9)
 
-    print("data-upload,timeframe={},size=1,format=GB count={}")
+    print("data-upload,timeframe={},size=1,format=GB count={}".format( timeframe, count))
 
 
 def stats_data(args):
@@ -165,9 +164,9 @@ def stats_data(args):
     size = offset = args_utils.get_or_default(args.command, 1)
     if command == 'month':
         get_upload_stats(month=size)
-    if command == 'day':
+    elif command == 'day':
         get_upload_stats(day=size)
-    if command == 'hour':
+    elif command == 'hour':
         get_upload_stats(hour=size)
     else:
         print("stats users sub-commands: {}".format(", ".join(commands)))
