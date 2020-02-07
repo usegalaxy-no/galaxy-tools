@@ -30,7 +30,7 @@ def disk_usage():
 def get_job_stats(day:int=None, hour:int=None):
     q = "SELECT state, count(*) from job "
 
-    timeframe = ""
+    timeframe = "timeframe=epoch,"
 
     if hour is not None:
         q += "WHERE update_time > now() - INTERVAL '{} hour' ".format(hour)
