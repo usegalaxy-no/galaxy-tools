@@ -222,12 +222,30 @@ def write_config_file():
     file_utils.write("galaxy.json", conf)
 
 
+def print_tick_entry(config_file):
+
+    script_path = os.path.realpath(__file__)
+
+    cmd = "{} {} -c ".format(sys.executable, script_path, config_file )
+    #<INSTALL_DIR>/venv/bin/python <INSTALL_DIR>/bin/galaxy_stats.py -c <INSTALL_DIR>/<CONFIG-FILE>
+    entry = """[[inputs.exec]]
+   commands = ['{cmd} stats']
+   timeout='10s'
+   data_format = 'influx'
+   interval = '1m'
+   name_prefix='galaxy_' 
+"""
+    entry = entry.format( cmd=cmd )
+
+    print( entry )
+
+
 def main():
 
     parser = argparse.ArgumentParser(description='cbu galaxy admin tool')
     parser.add_argument('-c', '--config', default="galaxy.json", help="config file")
 
-    commands = ["stats", "bootstrap"]
+    commands = ["stats", "tick-config"]
     parser.add_argument('command', nargs='+', help="{}".format(",".join(commands)))
 
     args = parser.parse_args()
@@ -236,11 +254,11 @@ def main():
     command = args.command.pop(0)
     if command not in commands:
         parser.print_help()
-
-    if command == 'bootstrap':
-        write_config_file()
         sys.exit()
 
+    if command == 'tick-config':
+        print_tick_entry(args.config)
+        sys.exit()
 
     config = config_utils.readin_config_file( args.config )
     global db
@@ -248,18 +266,13 @@ def main():
 
     if command == 'stats':
         stats_command(args)
-    elif command == 'bootstrap':
-        write_config_file()
+    elif command == 'tick':
+        print_tick_entry()
     else:
         print("Unknown command: {} are allowed.".format(string_utils.comma_sep( commands )))
         sys.exit( 1 )
 
 
-
-
-
 if __name__ == "__main__":
-#    get_user_stats()
-#    get_upload_stats()
     main()
 
