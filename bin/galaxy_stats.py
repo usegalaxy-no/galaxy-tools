@@ -5,21 +5,16 @@
 #
 # Kim Brugger (03 Apr 2019), contact: kim@brugger.dk
 
+import argparse
+import datetime
 import os
-import pprint
 import re
 import sys
 
-pp = pprint.PrettyPrinter(indent=4)
-import argparse
-
-import datetime
-
-import kbr.db_utils as db_utils
 import kbr.args_utils as args_utils
 import kbr.config_utils as config_utils
+import kbr.db_utils as db_utils
 import kbr.string_utils as string_utils
-import kbr.file_utils as file_utils
 
 db = None
 
@@ -29,22 +24,22 @@ def disk_usage():
 
 
 def get_job_stats(day: int = None, hour: int = None):
-    q = "SELECT state, count(*) from job "
+    sql = "SELECT state, count(*) from job "
 
     timeframe = "timeframe=epoch,"
 
     if hour is not None:
-        q += "WHERE update_time > now() - INTERVAL '{} hour' ".format(hour)
+        sql += "WHERE update_time > now() - INTERVAL '{} hour' ".format(hour)
         timeframe = "timeframe=hour,size={},".format(hour)
     elif day is not None:
-        q += "WHERE update_time > now() - INTERVAL '{} day' ".format(day)
+        sql += "WHERE update_time > now() - INTERVAL '{} day' ".format(day)
         timeframe = "timeframe=day,size={},".format(day)
 
-    q += "GROUP BY state"
+    sql += "GROUP BY state"
 
     total = 0
 
-    for entry in db.get_as_dict(q):
+    for entry in db.get_as_dict(sql):
         print("jobs,{}state={}\tcount={}".format(timeframe, entry['state'], entry['count']))
         total += int(entry['count'])
 
@@ -79,7 +74,6 @@ def stats_jobs(args):
 def get_user_stats(year: int = None, month: str = None):
     # default we show for the current month
     today = datetime.datetime.today()
-    datem = datetime.datetime(today.year, today.month, 1)
     where = "WHERE date_trunc('month', job.create_time AT TIME ZONE 'UTC') = '{}-{}-01'::date ".format(today.year,
                                                                                                        today.month)
 
@@ -90,13 +84,13 @@ def get_user_stats(year: int = None, month: str = None):
     elif month is not None:
         where = "WHERE date_trunc('month', job.create_time AT TIME ZONE 'UTC') = '{}-01'::date ".format(month)
 
-    q = "SELECT date_trunc('month', job.create_time AT TIME ZONE 'UTC')::date as month, "
-    q += "count(distinct user_id) AS count FROM job {}".format(where)
-    q += "GROUP BY month ORDER BY month DESC"
+    sql = "SELECT date_trunc('month', job.create_time AT TIME ZONE 'UTC')::date as month, "
+    sql += "count(distinct user_id) AS count FROM job {}".format(where)
+    sql += "GROUP BY month ORDER BY month DESC"
 
     #    print( q )
 
-    for entry in db.get_as_dict(q):
+    for entry in db.get_as_dict(sql):
         print("active-users,timeframe=month,size=1,date={}\tcount={}".format(entry['month'], entry['count']))
 
 
@@ -121,11 +115,11 @@ def stats_users(args):
 
 
 def get_queue_stats():
-    q = "SELECT tool_id, state, count(*) as count FROM job "
-    q += "WHERE state in ('queued', 'running') "
-    q += "GROUP BY tool_id, state ORDER BY count desc"
+    sql = "SELECT tool_id, state, count(*) as count FROM job "
+    sql += "WHERE state in ('queued', 'running') "
+    sql += "GROUP BY tool_id, state ORDER BY count desc"
 
-    for entry in db.get_as_dict(q):
+    for entry in db.get_as_dict(sql):
         entry['tool_id'] = re.sub(r'^.*repos/', '', entry['tool_id'])
         print("queue,tool_id={},state={} count={}".format(entry['tool_id'], entry['state'], entry['count']))
 
@@ -135,12 +129,12 @@ def stats_queue(args):
 
 
 def get_upload_stats(month: int = None, day: int = None, hour: int = None):
-    q = "SELECT coalesce(sum(dataset.total_size), 0) as size FROM job "
-    q += "LEFT JOIN job_to_output_dataset ON job.id = job_to_output_dataset.job_id "
-    q += "LEFT JOIN history_dataset_association ON "
-    q += " job_to_output_dataset.dataset_id = history_dataset_association.id "
-    q += "LEFT JOIN dataset ON history_dataset_association.dataset_id = dataset.id "
-    q += "WHERE job.tool_id = 'upload1'"
+    sql = "SELECT coalesce(sum(dataset.total_size), 0) as size FROM job "
+    sql += "LEFT JOIN job_to_output_dataset ON job.id = job_to_output_dataset.job_id "
+    sql += "LEFT JOIN history_dataset_association ON "
+    sql += " job_to_output_dataset.dataset_id = history_dataset_association.id "
+    sql += "LEFT JOIN dataset ON history_dataset_association.dataset_id = dataset.id "
+    sql += "WHERE job.tool_id = 'upload1'"
 
     timeframe = "hour"
     size = 1
@@ -154,11 +148,11 @@ def get_upload_stats(month: int = None, day: int = None, hour: int = None):
         timeframe = "hour"
         size = hour
 
-    q += "AND job.create_time AT TIME ZONE 'UTC' > (now() - '{} {}s'::INTERVAL)".format(size, timeframe)
+    sql += "AND job.create_time AT TIME ZONE 'UTC' > (now() - '{} {}s'::INTERVAL)".format(size, timeframe)
 
     #    print( q )
 
-    entry = db.get_as_dict(q)
+    entry = db.get_as_dict(sql)
     count = 0
     if entry is not None:
         count = float(entry[0]['size'])
@@ -214,12 +208,6 @@ def stats_command(args) -> None:
         sys.exit()
 
 
-def write_config_file():
-    conf = '{"db_url": "postgresql://<USERNAME>:<PASSWORD>@<HOSTNAME>:<PORT>/<DATABASE>"}'
-
-    file_utils.write("galaxy.json", conf)
-
-
 def print_tick_entry(config_file):
     interpreter_path = sys.executable
     script_path = os.path.realpath(__file__)
@@ -232,7 +220,7 @@ def print_tick_entry(config_file):
    data_format = 'influx'
    interval = '1m'
    name_prefix='galaxy_' 
-"""
+    """
     entry = entry.format(cmd=cmd)
 
     print(entry)
