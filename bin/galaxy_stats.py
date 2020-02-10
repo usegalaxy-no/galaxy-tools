@@ -8,6 +8,7 @@
 import sys
 import os
 import pprint
+import os
 import re
 
 pp = pprint.PrettyPrinter(indent=4)
@@ -224,10 +225,11 @@ def write_config_file():
 
 def print_tick_entry(config_file):
 
+    interpreter_path = sys.executable
     script_path = os.path.realpath(__file__)
+    config_file = os.path.abspath( config_file )
 
-    cmd = "{} {} -c ".format(sys.executable, script_path, config_file )
-    #<INSTALL_DIR>/venv/bin/python <INSTALL_DIR>/bin/galaxy_stats.py -c <INSTALL_DIR>/<CONFIG-FILE>
+    cmd = "{} {} -c {}".format(interpreter_path, script_path, config_file )
     entry = """[[inputs.exec]]
    commands = ['{cmd} stats']
    timeout='10s'
