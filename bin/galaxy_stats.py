@@ -16,11 +16,7 @@ import kbr.config_utils as config_utils
 import kbr.db_utils as db_utils
 import kbr.string_utils as string_utils
 
-db = None
-
-
-def disk_usage():
-    pass
+DB = None
 
 
 def get_job_stats(day: int = None, hour: int = None):
@@ -39,7 +35,7 @@ def get_job_stats(day: int = None, hour: int = None):
 
     total = 0
 
-    for entry in db.get_as_dict(sql):
+    for entry in DB.get_as_dict(sql):
         print("jobs,{}state={}\tcount={}".format(timeframe, entry['state'], entry['count']))
         total += int(entry['count'])
 
@@ -90,7 +86,7 @@ def get_user_stats(year: int = None, month: str = None):
 
     #    print( q )
 
-    for entry in db.get_as_dict(sql):
+    for entry in DB.get_as_dict(sql):
         print("active-users,timeframe=month,size=1,date={}\tcount={}".format(entry['month'], entry['count']))
 
 
@@ -119,7 +115,7 @@ def get_queue_stats():
     sql += "WHERE state in ('queued', 'running') "
     sql += "GROUP BY tool_id, state ORDER BY count desc"
 
-    for entry in db.get_as_dict(sql):
+    for entry in DB.get_as_dict(sql):
         entry['tool_id'] = re.sub(r'^.*repos/', '', entry['tool_id'])
         print("queue,tool_id={},state={} count={}".format(entry['tool_id'], entry['state'], entry['count']))
 
@@ -152,7 +148,7 @@ def get_upload_stats(month: int = None, day: int = None, hour: int = None):
 
     #    print( q )
 
-    entry = db.get_as_dict(sql)
+    entry = DB.get_as_dict(sql)
     count = 0
     if entry is not None:
         count = float(entry[0]['size'])
@@ -245,8 +241,8 @@ def main():
         sys.exit()
 
     config = config_utils.readin_config_file(args.config)
-    global db
-    db = db_utils.DB(config.db_url)
+    global DB
+    DB = db_utils.DB(config.db_url)
 
     if command == 'stats':
         stats_command(args)
