@@ -46,7 +46,8 @@ def get_data_growth(month:int=None, day:int=None, hour:int=None):
               LIMIT 1'''.format(time_trunc=time_trunc)
 
     for entry in DB.get_as_dict(sql):
-        print("data_growth,{}\tsize={}".format(timeframe, "size", entry[size]))
+        pp.pprint( entry )
+        print("data_growth,{}\tsize={}".format(timeframe, entry["size"]))
 
 
 def stats_growth(args):
