@@ -242,7 +242,10 @@ def main():
 
     config = config_utils.readin_config_file(args.config)
     global DB
-    DB = db_utils.DB(config.db_url)
+    if "db_url" in config:
+        DB = db_utils.DB(config.db_url)
+    elif "galaxy" in config and "database_connection" in config['galaxy']:
+        DB = db_utils.DB(config['galaxy']['database_connection'])
 
     if command == 'stats':
         stats_command(args)
