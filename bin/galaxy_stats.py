@@ -40,7 +40,7 @@ def get_data_growth(month:int=None, day:int=None, hour:int=None):
               FROM
                 dataset
               GROUP BY
-                month
+                time_trunc 
               ORDER BY
                 time_trunc DESC
               LIMIT 1'''.format(time_trunc=time_trunc)
