@@ -19,12 +19,87 @@ import kbr.string_utils as string_utils
 DB = None
 
 
-def get_job_stats(day: int = None, hour: int = None):
+
+def get_data_growth(month:int=None, day:int=None, hour:int=None):
+    time_trunc = " "
+    timeframe = "timeframe=epoch,"
+
+    if month is not None:
+        time_trunc = ", date_trunc('month', dataset.create_time AT TIME ZONE 'UTC')::date AS month "
+        timeframe = "timeframe=hour,size={},".format(month)
+    elif day is not None:
+        time_trunc = ", date_trunc('month', dataset.create_time AT TIME ZONE 'UTC')::date AS day "
+        timeframe = "timeframe=day,size={},".format(day)
+    elif hour is not None:
+        time_trunc = ", date_trunc('month', dataset.create_time AT TIME ZONE 'UTC')::date AS hour "
+        timeframe = "timeframe=hour,size={},".format(hour)
+
+    sql += "GROUP BY state"
+
+    total = 0
+
+    for entry in DB.get_as_dict(sql):
+        print("jobs,{}state={}\tcount={}".format(timeframe, entry['state'], entry['count']))
+        total += int(entry['count'])
+
+    if total > 0:
+        print("jobs,{}state={}\tcount={}".format(timeframe, "total", total))
+
+
+
+    sql = '''SELECT
+                pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0))) {time_trunc},
+              FROM
+                dataset
+              GROUP BY
+                month
+              ORDER BY
+                month DESC
+              LIMIT 1'''.format(time_trunc=time_trunc)
+
+    for entry in DB.get_as_dict(sql):
+        print("data_growth,{}\tsize={}".format(timeframe, "size", entry[size]))
+
+
+def stats_growth(args):
+    if len(args.command) == 0:
+        get_data_growth()
+        get_data_growth(month=1)
+        get_data_growth(day=1)
+        get_data_growth(hour=1)
+        return
+
+    commands = ['total', 'month', 'day', 'hour', 'help']
+    command = args.command.pop(0)
+    args_utils.valid_command(command, commands)
+
+    if command == 'total':
+        get_data_growth()
+    elif command == 'month':
+        offset = args_utils.get_or_default(args.command, 1)
+        get_data_growth(month=offset)
+    elif command == 'day':
+        offset = args_utils.get_or_default(args.command, 1)
+        get_data_growth(day=offset)
+    elif command == 'hour':
+        offset = args_utils.get_or_default(args.command, 1)
+        get_data_growth(hour=offset)
+    else:
+        print("stats data_growth sub-commands: {}".format(", ".join(commands)))
+        sys.exit()
+
+
+
+def get_job_stats(month: int= None, day: int = None, hour: int = None):
     sql = "SELECT state, count(*) from job "
 
     timeframe = "timeframe=epoch,"
 
-    if hour is not None:
+
+    if month is not None:
+        sql += "WHERE update_time > now() - INTERVAL '{} month' ".format(hour)
+        timeframe = "timeframe=hour,size={},".format(month)
+    elif hour is not None:
         sql += "WHERE update_time > now() - INTERVAL '{} hour' ".format(hour)
         timeframe = "timeframe=hour,size={},".format(hour)
     elif day is not None:
@@ -48,14 +123,18 @@ def stats_jobs(args):
         get_job_stats()
         get_job_stats(day=1)
         get_job_stats(hour=1)
+        get_job_stats(month=1)
         return
 
-    commands = ['total', 'day', 'hour', 'help']
+    commands = ['total', 'month', 'day', 'hour', 'help']
     command = args.command.pop(0)
     args_utils.valid_command(command, commands)
 
     if command == 'total':
         get_job_stats()
+    elif command == 'month':
+        offset = args_utils.get_or_default(args.command, 1)
+        get_job_stats(month=offset)
     elif command == 'day':
         offset = args_utils.get_or_default(args.command, 1)
         get_job_stats(day=offset)
@@ -184,6 +263,7 @@ def stats_command(args) -> None:
         stats_data(args)
         stats_jobs(args)
         stats_queue(args)
+        stats_growth(args)
         return
 
     commands = ['users', 'jobs', 'queue', 'data', 'help']
@@ -199,6 +279,8 @@ def stats_command(args) -> None:
         stats_data(args)
     elif command == 'queue':
         stats_queue(args)
+    elif command == 'growth':
+        stats_growth(args)
     else:
         print("stat sub-commands: {}".format(", ".join(commands)))
         sys.exit()
