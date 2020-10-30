@@ -34,18 +34,6 @@ def get_data_growth(month:int=None, day:int=None, hour:int=None):
         time_trunc = ", date_trunc('month', dataset.create_time AT TIME ZONE 'UTC')::date AS hour "
         timeframe = "timeframe=hour,size={},".format(hour)
 
-    sql += "GROUP BY state"
-
-    total = 0
-
-    for entry in DB.get_as_dict(sql):
-        print("jobs,{}state={}\tcount={}".format(timeframe, entry['state'], entry['count']))
-        total += int(entry['count'])
-
-    if total > 0:
-        print("jobs,{}state={}\tcount={}".format(timeframe, "total", total))
-
-
 
     sql = '''SELECT
                 pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0))) {time_trunc},
