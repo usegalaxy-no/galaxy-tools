@@ -25,13 +25,13 @@ def get_data_growth(month:int=None, day:int=None, hour:int=None):
     timeframe = "timeframe=epoch,"
 
     if month is not None:
-        time_trunc = ", date_trunc('month', dataset.create_time AT TIME ZONE 'UTC')::date AS time_trunc "
+        time_trunc = ", date_trunc('month', dataset.create_time AT TIME ZONE 'UTC') AS time_trunc "
         timeframe = "timeframe=hour,size={},".format(month)
     elif day is not None:
-        time_trunc = ", date_trunc('day', dataset.create_time AT TIME ZONE 'UTC')::date AS time_trunc "
+        time_trunc = ", date_trunc('day', dataset.create_time AT TIME ZONE 'UTC') AS time_trunc "
         timeframe = "timeframe=day,size={},".format(day)
     elif hour is not None:
-        time_trunc = ", date_trunc('hour', dataset.create_time AT TIME ZONE 'UTC')::date AS time_trunc "
+        time_trunc = ", date_trunc('hour', dataset.create_time AT TIME ZONE 'UTC') AS time_trunc "
         timeframe = "timeframe=hour,size={},".format(hour)
 
 
