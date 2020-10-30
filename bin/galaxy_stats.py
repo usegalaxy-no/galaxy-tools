@@ -97,7 +97,7 @@ def get_job_stats(month: int= None, day: int = None, hour: int = None):
 
 
     if month is not None:
-        sql += "WHERE update_time > now() - INTERVAL '{} month' ".format(hour)
+        sql += "WHERE update_time > now() - INTERVAL '{} month' ".format(month)
         timeframe = "timeframe=hour,size={},".format(month)
     elif hour is not None:
         sql += "WHERE update_time > now() - INTERVAL '{} hour' ".format(hour)
@@ -266,7 +266,7 @@ def stats_command(args) -> None:
         stats_growth(args)
         return
 
-    commands = ['users', 'jobs', 'queue', 'data', 'help']
+    commands = ['users', 'jobs', 'queue', 'data', 'growth', 'help']
 
     command = args.command.pop(0)
     args_utils.valid_command(command, commands)
