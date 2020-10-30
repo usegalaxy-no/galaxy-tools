@@ -28,10 +28,10 @@ def get_data_growth(month:int=None, day:int=None, hour:int=None):
         time_trunc = ", date_trunc('month', dataset.create_time AT TIME ZONE 'UTC')::date AS time_trunc "
         timeframe = "timeframe=hour,size={},".format(month)
     elif day is not None:
-        time_trunc = ", date_trunc('month', dataset.create_time AT TIME ZONE 'UTC')::date AS time_trunc "
+        time_trunc = ", date_trunc('day', dataset.create_time AT TIME ZONE 'UTC')::date AS time_trunc "
         timeframe = "timeframe=day,size={},".format(day)
     elif hour is not None:
-        time_trunc = ", date_trunc('month', dataset.create_time AT TIME ZONE 'UTC')::date AS time_trunc "
+        time_trunc = ", date_trunc('hour', dataset.create_time AT TIME ZONE 'UTC')::date AS time_trunc "
         timeframe = "timeframe=hour,size={},".format(hour)
 
 
@@ -46,7 +46,6 @@ def get_data_growth(month:int=None, day:int=None, hour:int=None):
               LIMIT 1'''.format(time_trunc=time_trunc)
 
     for entry in DB.get_as_dict(sql):
-        pp.pprint( entry )
         print("data_growth,{}\tsize={}".format(timeframe, entry["size"]))
 
 
