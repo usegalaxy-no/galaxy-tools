@@ -36,7 +36,7 @@ def get_data_growth(month:int=None, day:int=None, hour:int=None):
 
 
     sql = '''SELECT
-                pg_size_pretty(sum(coalesce(dataset.total_size, dataset.file_size, 0))) as size {time_trunc}
+                sum(coalesce(dataset.total_size, dataset.file_size, 0)) as size {time_trunc}
               FROM
                 dataset
               GROUP BY
