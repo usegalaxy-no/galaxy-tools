@@ -21,17 +21,17 @@ DB = None
 
 
 def get_data_growth(month:int=None, day:int=None, hour:int=None):
-    time_trunc = " "
+    time_trunc = ", 'E' as time_trunc "
     timeframe = "timeframe=epoch,"
 
     if month is not None:
-        time_trunc = ", date_trunc('month', dataset.create_time AT TIME ZONE 'UTC')::date AS month "
+        time_trunc = ", date_trunc('month', dataset.create_time AT TIME ZONE 'UTC')::date AS time_trunc "
         timeframe = "timeframe=hour,size={},".format(month)
     elif day is not None:
-        time_trunc = ", date_trunc('month', dataset.create_time AT TIME ZONE 'UTC')::date AS day "
+        time_trunc = ", date_trunc('month', dataset.create_time AT TIME ZONE 'UTC')::date AS time_trunc "
         timeframe = "timeframe=day,size={},".format(day)
     elif hour is not None:
-        time_trunc = ", date_trunc('month', dataset.create_time AT TIME ZONE 'UTC')::date AS hour "
+        time_trunc = ", date_trunc('month', dataset.create_time AT TIME ZONE 'UTC')::date AS time_trunc "
         timeframe = "timeframe=hour,size={},".format(hour)
 
 
@@ -42,7 +42,7 @@ def get_data_growth(month:int=None, day:int=None, hour:int=None):
               GROUP BY
                 month
               ORDER BY
-                month DESC
+                time_trunc DESC
               LIMIT 1'''.format(time_trunc=time_trunc)
 
     for entry in DB.get_as_dict(sql):
