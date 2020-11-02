@@ -28,7 +28,7 @@ def get_data_growth(month:int=None, day:int=None, hour:int=None):
 
     if month is not None:
         sql += "WHERE update_time > now() - INTERVAL '{} month' ".format(month)
-        timeframe = "timeframe=hour,size={}".format(month)
+        timeframe = "timeframe=month,size={}".format(month)
     elif hour is not None:
         sql += "WHERE update_time > now() - INTERVAL '{} hour' ".format(hour)
         timeframe = "timeframe=hour,size={}".format(hour)
