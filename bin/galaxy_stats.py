@@ -21,29 +21,21 @@ DB = None
 
 
 def get_data_growth(month:int=None, day:int=None, hour:int=None):
-    time_trunc = ", 'E' as time_trunc "
+    sql = "SELECT sum(coalesce(dataset.total_size, dataset.file_size, 0)) AS size FROM dataset  "
+
     timeframe = "timeframe=epoch,"
 
+
     if month is not None:
-        time_trunc = ", date_trunc('month', dataset.create_time AT TIME ZONE 'UTC') AS time_trunc "
+        sql += "WHERE update_time > now() - INTERVAL '{} month' ".format(month)
         timeframe = "timeframe=hour,size={},".format(month)
-    elif day is not None:
-        time_trunc = ", date_trunc('day', dataset.create_time AT TIME ZONE 'UTC') AS time_trunc "
-        timeframe = "timeframe=day,size={},".format(day)
     elif hour is not None:
-        time_trunc = ", date_trunc('hour', dataset.create_time AT TIME ZONE 'UTC') AS time_trunc "
+        sql += "WHERE update_time > now() - INTERVAL '{} hour' ".format(hour)
         timeframe = "timeframe=hour,size={},".format(hour)
+    elif day is not None:
+        sql += "WHERE update_time > now() - INTERVAL '{} day' ".format(day)
+        timeframe = "timeframe=day,size={},".format(day)
 
-
-    sql = '''SELECT
-                sum(coalesce(dataset.total_size, dataset.file_size, 0)) as size {time_trunc}
-              FROM
-                dataset
-              GROUP BY
-                time_trunc 
-              ORDER BY
-                time_trunc DESC
-              LIMIT 1'''.format(time_trunc=time_trunc)
 
     for entry in DB.get_as_dict(sql):
         print("data_growth,{}\tsize={}".format(timeframe, entry["size"]))
@@ -248,7 +240,7 @@ def stats_data(args):
 def stats_command(args) -> None:
     if len(args.command) == 0:
         stats_users(args)
-        stats_data(args)
+#        stats_data(args)
         stats_jobs(args)
         stats_queue(args)
         stats_growth(args)
