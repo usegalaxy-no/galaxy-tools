@@ -38,6 +38,8 @@ def get_data_growth(month:int=None, day:int=None, hour:int=None):
 
 
     for entry in DB.get_as_dict(sql):
+        if entry["size"] == None:
+            entry['size'] = 0
         print("data_growth,{}\tsize={}".format(timeframe, entry["size"]))
 
 
