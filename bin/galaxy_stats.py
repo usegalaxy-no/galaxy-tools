@@ -93,7 +93,6 @@ def get_job_stats(month: int= None, day: int = None, hour: int = None):
     total = 0
 
     for entry in DB.get_as_dict(sql):
-        if entry['count']
         print("jobs,{}state={}\tcount={}".format(timeframe, entry['state'], entry['count']))
         total += int(entry['count'])
 
