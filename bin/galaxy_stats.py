@@ -23,18 +23,18 @@ DB = None
 def get_data_growth(month:int=None, day:int=None, hour:int=None):
     sql = "SELECT sum(coalesce(dataset.total_size, dataset.file_size, 0)) AS size FROM dataset  "
 
-    timeframe = "timeframe=epoch,"
+    timeframe = "timeframe=epoch"
 
 
     if month is not None:
         sql += "WHERE update_time > now() - INTERVAL '{} month' ".format(month)
-        timeframe = "timeframe=hour,size={},".format(month)
+        timeframe = "timeframe=hour,size={}".format(month)
     elif hour is not None:
         sql += "WHERE update_time > now() - INTERVAL '{} hour' ".format(hour)
-        timeframe = "timeframe=hour,size={},".format(hour)
+        timeframe = "timeframe=hour,size={}".format(hour)
     elif day is not None:
         sql += "WHERE update_time > now() - INTERVAL '{} day' ".format(day)
-        timeframe = "timeframe=day,size={},".format(day)
+        timeframe = "timeframe=day,size={}".format(day)
 
 
     for entry in DB.get_as_dict(sql):
