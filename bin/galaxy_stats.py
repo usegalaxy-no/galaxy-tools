@@ -320,6 +320,8 @@ def stats_command(args) -> None:
         stats_jobs(args)
         stats_queue(args)
         stats_growth(args)
+        get_nels_exports()
+        get_nels_imports()
         return
 
     commands = ['users', 'users-rolling', 'jobs', 'queue', 'data', 'growth', 'help']
