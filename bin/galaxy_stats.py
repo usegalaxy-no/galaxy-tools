@@ -141,13 +141,13 @@ def get_rolling_user_stats(month: int = None, day: int = None, hour: int = None)
 
     if month is not None:
         sql += "WHERE job.create_time AT TIME ZONE 'UTC' > (now() - '{} month'::INTERVAL);".format(month)
-        timeframe = "timeframe=month,size={},".format(month)
+        timeframe = "timeframe=month,size={}".format(month)
     elif day is not None:
         sql += "WHERE job.create_time AT TIME ZONE 'UTC' > (now() - '{} day'::INTERVAL);".format(day)
-        timeframe = "timeframe=day,size={},".format(day)
+        timeframe = "timeframe=day,size={}".format(day)
     elif hour is not None:
         sql += "WHERE job.create_time AT TIME ZONE 'UTC' > (now() - '{} hour'::INTERVAL);".format(hour)
-        timeframe = "timeframe=hour,size={},".format(hour)
+        timeframe = "timeframe=hour,size={}".format(hour)
 
 
     entries = DB.get_as_dict(sql)
