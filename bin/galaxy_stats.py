@@ -25,7 +25,6 @@ def get_data_growth(month:int=None, day:int=None, hour:int=None):
 
     timeframe = "timeframe=epoch"
 
-
     if month is not None:
         sql += "WHERE update_time > now() - INTERVAL '{} month' ".format(month)
         timeframe = "timeframe=month,size={}".format(month)
@@ -92,7 +91,11 @@ def get_job_stats(month: int= None, day: int = None, hour: int = None):
 
     total = 0
 
-    for entry in DB.get_as_dict(sql):
+    entries = DB.get_as_dict(sql)
+    if entries == None or entries == []:
+        entries = [{'count': 0, "state":"ok"}]
+
+    for entry in entries:
         print("jobs,{}state={}\tcount={}".format(timeframe, entry['state'], entry['count']))
         total += int(entry['count'])
 
@@ -125,6 +128,55 @@ def stats_jobs(args):
         get_job_stats(hour=offset)
     else:
         print("stats job sub-commands: {}".format(", ".join(commands)))
+        sys.exit()
+
+
+
+def get_rolling_user_stats(month: int = None, day: int = None, hour: int = None):
+
+
+    sql = "select count(distinct(user_id))  from job "
+    timeframe = "timeframe=epoch,"
+
+
+    if month is not None:
+        sql += "WHERE job.create_time AT TIME ZONE 'UTC' > (now() - '{} month'::INTERVAL);".format(month)
+        timeframe = "timeframe=month,size={},".format(month)
+    elif day is not None:
+        sql += "WHERE job.create_time AT TIME ZONE 'UTC' > (now() - '{} day'::INTERVAL);".format(day)
+        timeframe = "timeframe=day,size={},".format(day)
+    elif hour is not None:
+        sql += "WHERE job.create_time AT TIME ZONE 'UTC' > (now() - '{} hour'::INTERVAL);".format(hour)
+        timeframe = "timeframe=hour,size={},".format(hour)
+
+
+    entries = DB.get_as_dict(sql)
+    if entries == None or entries == []:
+        entries = [{'count': 0, "state":"ok"}]
+
+    for entry in entries:
+        print("galaxy-users,{timeframe}\tcount={count}".format(timeframe=timeframe, count=entry['count']))
+
+
+
+def stats_rolling_users(args):
+    if len(args.command) == 0:
+        stats_rolling_users(month=1)
+        stats_rolling_users(day=1)
+        stats_rolling_users(hour=2)
+        return
+
+    commands = ['month', 'day', 'hour', 'help']
+    command = args.command.pop(0)
+    size = offset = args_utils.get_or_default(args.command, 1)
+    if command == 'month':
+        get_rolling_user_stats(month=size)
+    elif command == 'day':
+        get_rolling_user_stats(day=size)
+    elif command == 'hour':
+        get_rolling_user_stats(hour=size)
+    else:
+        print("stats rolling-users sub-commands: {}".format(", ".join(commands)))
         sys.exit()
 
 
@@ -248,7 +300,7 @@ def stats_command(args) -> None:
         stats_growth(args)
         return
 
-    commands = ['users', 'jobs', 'queue', 'data', 'growth', 'help']
+    commands = ['users', 'users-rolling', 'jobs', 'queue', 'data', 'growth', 'help']
 
     command = args.command.pop(0)
     args_utils.valid_command(command, commands)
