@@ -159,6 +159,27 @@ def get_rolling_user_stats(month: int = None, day: int = None, hour: int = None)
 
 
 
+def get_nels_exports():
+    sql="SELECT count(*), instance FROM nels_export_tracking GROUP BY instance;"
+
+
+    entries = DB.get_as_dict(sql)
+    for entry in entries:
+        print("nels-exports,instance={instance}\tcount={count}".format(instance=entry['instance'], count=entry['count']))
+
+
+def get_nels_imports():
+    sql="select count(*) from nels_import_tracking;"
+
+
+    entries = DB.get_as_dict(sql)
+    for entry in entries:
+        print("nels-imports\tcount={count}".format(count=entry['count']))
+
+
+
+
+
 def stats_rolling_users(args):
     if len(args.command) == 0:
         get_rolling_user_stats(month=1)
