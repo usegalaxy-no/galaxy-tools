@@ -295,7 +295,7 @@ def stats_command(args) -> None:
     if len(args.command) == 0:
         stats_users(args)
 #        stats_data(args)
-        stats_rolling_users()
+        stats_rolling_users(args)
         stats_jobs(args)
         stats_queue(args)
         stats_growth(args)
