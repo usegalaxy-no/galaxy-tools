@@ -161,9 +161,9 @@ def get_rolling_user_stats(month: int = None, day: int = None, hour: int = None)
 
 def stats_rolling_users(args):
     if len(args.command) == 0:
-        stats_rolling_users(month=1)
-        stats_rolling_users(day=1)
-        stats_rolling_users(hour=2)
+        get_rolling_user_stats(month=1)
+        get_rolling_user_stats(day=1)
+        get_rolling_user_stats(hour=2)
         return
 
     commands = ['month', 'day', 'hour', 'help']
