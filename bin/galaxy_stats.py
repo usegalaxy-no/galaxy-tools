@@ -47,7 +47,7 @@ def stats_growth(args):
         get_data_growth()
         get_data_growth(month=1)
         get_data_growth(day=1)
-        get_data_growth(hour=1)
+        get_data_growth(hour=2)
         return
 
     commands = ['total', 'month', 'day', 'hour', 'help']
@@ -107,7 +107,7 @@ def stats_jobs(args):
     if len(args.command) == 0:
         get_job_stats()
         get_job_stats(day=1)
-        get_job_stats(hour=1)
+        get_job_stats(hour=2)
         get_job_stats(month=1)
         return
 
