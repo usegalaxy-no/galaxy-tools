@@ -367,7 +367,7 @@ def stats_command(args) -> None:
         stats_rolling_users(args)
         stats_jobs(args)
         stats_queue(args)
-        stats_rolling_workflows()
+        stats_rolling_workflows(args)
         stats_growth(args)
         get_nels_exports()
         get_nels_imports()
