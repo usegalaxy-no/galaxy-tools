@@ -19,6 +19,54 @@ import kbr.string_utils as string_utils
 DB = None
 
 
+def get_rolling_workflow_stats(month: int = None, day: int = None, hour: int = None):
+
+
+    sql = "select count(distinct(id))  from workflow_invocation "
+    timeframe = "timeframe=epoch,"
+
+
+    if month is not None:
+        sql += "WHERE create_time AT TIME ZONE 'UTC' > (now() - '{} month'::INTERVAL);".format(month)
+        timeframe = "timeframe=month,size={}".format(month)
+    elif day is not None:
+        sql += "WHERE create_time AT TIME ZONE 'UTC' > (now() - '{} day'::INTERVAL);".format(day)
+        timeframe = "timeframe=day,size={}".format(day)
+    elif hour is not None:
+        sql += "WHERE create_time AT TIME ZONE 'UTC' > (now() - '{} hour'::INTERVAL);".format(hour)
+        timeframe = "timeframe=hour,size={}".format(hour)
+
+
+    entries = DB.get_as_dict(sql)
+    if entries == None or entries == []:
+        entries = [{'count': 0, "state":"ok"}]
+
+    for entry in entries:
+        print("workflows,{timeframe}\tcount={count}".format(timeframe=timeframe, count=entry['count']))
+
+
+def stats_rolling_workflows(args):
+    if len(args.command) == 0:
+        get_rolling_workflow_stats(month=1)
+        get_rolling_workflow_stats(day=1)
+        get_rolling_workflow_stats(hour=2)
+        return
+
+    commands = ['month', 'day', 'hour', 'help']
+    command = args.command.pop(0)
+    size = offset = args_utils.get_or_default(args.command, 1)
+    if command == 'month':
+        get_rolling_workflow_stats(month=size)
+    elif command == 'day':
+        get_rolling_workflow_stats(day=size)
+    elif command == 'hour':
+        get_rolling_workflow_stats(hour=size)
+    else:
+        print("stats rolling-workflow sub-commands: {}".format(", ".join(commands)))
+        sys.exit()
+
+
+
 
 def get_data_growth(month:int=None, day:int=None, hour:int=None):
     sql = "SELECT sum(coalesce(dataset.total_size, dataset.file_size, 0)) AS size FROM dataset  "
@@ -319,6 +367,7 @@ def stats_command(args) -> None:
         stats_rolling_users(args)
         stats_jobs(args)
         stats_queue(args)
+        stats_rolling_workflows()
         stats_growth(args)
         get_nels_exports()
         get_nels_imports()
