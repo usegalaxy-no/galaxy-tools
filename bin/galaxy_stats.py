@@ -224,6 +224,17 @@ def get_nels_imports():
     for entry in entries:
         print("nels-imports\tcount={count}".format(count=entry['count']))
 
+def get_workflow_stats():
+    sql=""select count(*) AS count  from workflow_invocation"
+
+
+
+    entries = DB.get_as_dict(sql)
+    for entry in entries:
+        print(f"workflows,timeframe=epoc count={entry['count']}")
+
+
+
 
 
 
@@ -371,6 +382,7 @@ def stats_command(args) -> None:
         stats_growth(args)
         get_nels_exports()
         get_nels_imports()
+        get_workflow_stats()
         return
 
     commands = ['users', 'users-rolling', 'jobs', 'queue', 'data', 'growth', 'help']
