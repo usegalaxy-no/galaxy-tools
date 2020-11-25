@@ -225,7 +225,7 @@ def get_nels_imports():
         print("nels-imports\tcount={count}".format(count=entry['count']))
 
 def get_workflow_stats():
-    sql=""select count(*) AS count  from workflow_invocation"
+    sql="select count(*) AS count  from workflow_invocation"
 
 
 
