@@ -1,6 +1,8 @@
 # Introduction
 This tool extracts statistics data from a Galaxy installation in a format compatible to [Telegraf of TICK stack](https://www.influxdata.com/time-series-platform/)
 
+DEPRECATED: USE INSTEAD NGA VERSION HOSTED AT https://git.app.uib.no/cbu-dev/nga
+
 # Setup
 ```bash
 git clone https://github.com/elixir-no-nels/galaxy-admin.git
